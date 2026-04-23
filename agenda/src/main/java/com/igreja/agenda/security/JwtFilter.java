@@ -28,8 +28,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain)
+                                   @NonNull HttpServletResponse response,
+                                   @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
@@ -38,9 +38,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
             String token = authHeader.substring(7);
 
-            String email = null;
             try {
-                email = jwtService.getEmail(token);
+                String email = jwtService.getEmail(token);
 
                 if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
@@ -57,22 +56,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 }
 
             } catch (Exception e) {
-                // ignora token inválido e segue fluxo
-            }
-
-            // evita reprocessar se já estiver autenticado
-            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
-                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                // token inválido → segue sem autenticar
             }
         }
 
