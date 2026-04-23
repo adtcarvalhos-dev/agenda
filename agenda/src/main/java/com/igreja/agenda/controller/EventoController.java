@@ -26,6 +26,7 @@ public class EventoController {
     }
 
     // Todos autenticados podem ver
+    @PreAuthorize("hasAnyRole('ADMIN','MEMBRO')")
     @GetMapping
     public List<EventoResponse> listarEventos() {
         return eventoService.listar();
