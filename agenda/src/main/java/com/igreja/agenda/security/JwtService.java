@@ -21,14 +21,15 @@ public class JwtService {
         return Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String gerarToken(String email) {
-        return Jwts.builder()
-                .subject(email)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 86400000)) // 24h
-                .signWith(getSigningKey())
-                .compact();
-    }
+    public String gerarToken(Usuario usuario) {
+    return Jwts.builder()
+            .subject(usuario.getEmail())
+            .claim("role", usuario.getRole().name()) // 🔥 ESSENCIAL
+            .issuedAt(new Date())
+            .expiration(new Date(System.currentTimeMillis() + 86400000))
+            .signWith(getSigningKey())
+            .compact();
+}
 
     public String getEmail(String token) {
         return Jwts.parser()
