@@ -10,6 +10,7 @@ import com.igreja.agenda.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -20,6 +21,7 @@ public class EventoService {
     private final EventoRepository eventoRepository;
     private final UsuarioRepository usuarioRepository;
 
+    
     public EventoResponse criar(EventoRequest request, String emailUsuario) {
         Usuario usuario = usuarioRepository.findByEmail(emailUsuario)
                 .orElseThrow(() -> new BusinessException("Usuário não encontrado"));
@@ -36,6 +38,7 @@ public class EventoService {
         return toResponse(salvo);
     }
 
+    
     public List<EventoResponse> listar() {
         return eventoRepository.findAll(Sort.by("data").ascending())
                 .stream()
@@ -50,6 +53,7 @@ public class EventoService {
         return toResponse(evento);
     }
 
+    
     public EventoResponse atualizar(Long id, EventoRequest request) {
         Evento evento = eventoRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("Evento não encontrado"));
@@ -59,19 +63,28 @@ public class EventoService {
         evento.setData(request.getData());
         evento.setHora(request.getHora());
 
-        eventoRepository.save(evento);
+        Evento atualizado = eventoRepository.save(evento);
 
-        return toResponse(evento);
+        return toResponse(atualizado);
     }
 
+    
+    @Transactional
     public void deletar(Long id) {
-        if (!eventoRepository.existsById(id)) {
-            throw new BusinessException("Evento não encontrado");
-        }
+        Evento evento = eventoRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Evento não encontrado"));
 
-        eventoRepository.deleteById(id);
+       
+        evento.limparPresencas();
+
+        
+        eventoRepository.saveAndFlush(evento);
+
+        
+        eventoRepository.delete(evento);
     }
 
+    
     private EventoResponse toResponse(Evento evento) {
         return EventoResponse.builder()
                 .id(evento.getId())
