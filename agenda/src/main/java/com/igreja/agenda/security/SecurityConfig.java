@@ -3,7 +3,6 @@ package com.igreja.agenda.security;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 
@@ -16,7 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@EnableMethodSecurity // necessário para @PreAuthorize funcionar
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
@@ -29,26 +28,23 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) {
 
         http
-                // API stateless (JWT)
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // desabilita csrf (API REST)
-                .csrf(AbstractHttpConfigurer::disable)
+            .csrf(AbstractHttpConfigurer::disable)
 
-                // regras de acesso
-                .authorizeHttpRequests(auth -> auth
-                        // rotas públicas
-                        .requestMatchers("/auth/**").permitAll()
+            .authorizeHttpRequests(auth -> auth
+                // 🔥 ROTAS PÚBLICAS
+                .requestMatchers("/auth/**", "/ping").permitAll()
 
-                        // cadastro liberado (se quiser travar depois, muda aqui)
-                        .requestMatchers("/usuarios").permitAll()
+                // cadastro liberado (opcional)
+                .requestMatchers("/usuarios").permitAll()
 
-                        .anyRequest().authenticated()
-                )
+                // 🔒 resto protegido
+                .anyRequest().authenticated()
+            )
 
-                // adiciona filtro JWT
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
