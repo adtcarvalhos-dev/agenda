@@ -6,6 +6,7 @@ import com.igreja.agenda.exception.BusinessException;
 import com.igreja.agenda.repository.ResetPasswordTokenRepository;
 import com.igreja.agenda.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -22,8 +23,11 @@ public class PasswordResetService {
 
     private final UsuarioRepository usuarioRepository;
     private final ResetPasswordTokenRepository tokenRepository;
-    private final JavaMailSender mailSender;
+    private final ObjectProvider<JavaMailSender> mailSenderProvider;
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${spring.mail.host:}")
+    private String mailHost;
 
     @Value("${app.reset-password-url:http://localhost:3000/reset-password}")
     private String resetPasswordUrl;
@@ -44,7 +48,12 @@ public class PasswordResetService {
             token.setExpiracao(LocalDateTime.now().plusHours(2));
             tokenRepository.save(token);
 
-            sendResetEmail(usuario.getEmail(), token.getToken());
+            JavaMailSender mailSender = mailSenderProvider.getIfAvailable();
+            if (mailSender == null || mailHost == null || mailHost.isBlank()) {
+                throw new BusinessException("Envio de email não configurado");
+            }
+
+            sendResetEmail(mailSender, usuario.getEmail(), token.getToken());
         });
     }
 
@@ -64,7 +73,7 @@ public class PasswordResetService {
         tokenRepository.delete(token);
     }
 
-    private void sendResetEmail(String email, String token) {
+    private void sendResetEmail(JavaMailSender mailSender, String email, String token) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(mailFrom);
         message.setTo(email);
