@@ -3,6 +3,7 @@ package com.igreja.agenda.controller;
 import com.igreja.agenda.dto.AuthRequest;
 import com.igreja.agenda.dto.AuthResponse;
 import com.igreja.agenda.dto.ForgotPasswordRequest;
+import com.igreja.agenda.dto.LoginRequest;
 import com.igreja.agenda.dto.ResetPasswordRequest;
 import com.igreja.agenda.service.AuthService;
 import com.igreja.agenda.service.PasswordResetService;
@@ -25,7 +26,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@RequestBody @Valid AuthRequest request) {
+    public AuthResponse login(@RequestBody @Valid LoginRequest request) {
         return authService.login(request);
     }
 

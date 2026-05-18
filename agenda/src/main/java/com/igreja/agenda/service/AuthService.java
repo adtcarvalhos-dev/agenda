@@ -2,6 +2,7 @@ package com.igreja.agenda.service;
 
 import com.igreja.agenda.dto.AuthRequest;
 import com.igreja.agenda.dto.AuthResponse;
+import com.igreja.agenda.dto.LoginRequest;
 import com.igreja.agenda.entity.Role;
 import com.igreja.agenda.entity.Usuario;
 import com.igreja.agenda.exception.BusinessException;
@@ -43,7 +44,7 @@ public class AuthService {
     }
 
     // LOGIN
-    public AuthResponse login(AuthRequest request) {
+    public AuthResponse login(LoginRequest request) {
 
         String email = request.getEmail().toLowerCase().trim();
 
